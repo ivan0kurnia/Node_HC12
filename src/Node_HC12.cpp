@@ -34,6 +34,11 @@ const bool Node_HC12::begin(const uint32_t br, const uint8_t ch)
         return false;
 
     setToTransmissionMode();
+
+#if DEBUG_MODE
+    Serial.println(F("[M] Begin sequence success"));
+#endif
+
     return true;
 }
 
@@ -46,7 +51,9 @@ void Node_HC12::setToATCommandMode()
     }
     else
     {
-        // Serial.println(F("[M] Changing mode to AT command mode"));
+#if DEBUG_MODE
+        Serial.println(F("[M] Changing mode to AT command mode"));
+#endif
 
         mode = AT_COMMAND_MODE;
         digitalWrite(SET_PIN, AT_COMMAND_MODE);
@@ -63,7 +70,9 @@ void Node_HC12::setToTransmissionMode()
     }
     else
     {
-        // Serial.println(F("[M] Changing mode to transmission mode"));
+#if DEBUG_MODE
+        Serial.println(F("[M] Changing mode to transmission mode"));
+#endif
 
         mode = TRANSMISSION_MODE;
         digitalWrite(SET_PIN, TRANSMISSION_MODE);
@@ -92,9 +101,11 @@ const String Node_HC12::getResponse(const uint32_t timeout) const
             } while (serial->available());
             response.trim();
 
-            // Serial.print(F("[R] "));
-            // Serial.print(response);
-            // Serial.println();
+#if DEBUG_MODE
+            Serial.print(F("[R] "));
+            Serial.print(response);
+            Serial.println();
+#endif
 
             break;
         }
@@ -109,9 +120,12 @@ const bool Node_HC12::testAT() const
     {
         serial->print(F("AT"));
 
-        if (getResponse() == "OK")
+        if (getResponse() == F("OK"))
         {
+#if DEBUG_MODE
             Serial.println(F("[M] OK response received"));
+#endif
+
             return true;
         }
 
@@ -130,7 +144,10 @@ const bool Node_HC12::changeBaudrate(const uint32_t br)
     {
         if (baudrate == br)
         {
+#if DEBUG_MODE
             Serial.println(F("[M] Baudrate not changed. Already the same"));
+#endif
+
             return true;
         }
 
@@ -150,10 +167,12 @@ const bool Node_HC12::changeBaudrate(const uint32_t br)
             serial->end();
             serial->begin(br);
 
+#if DEBUG_MODE
             Serial.print(F("[M] Changing baudrate to "));
             Serial.print(br);
             Serial.print(F(" was successful"));
             Serial.println();
+#endif
 
             setToATCommandMode();
 
@@ -182,9 +201,11 @@ const uint32_t Node_HC12::checkDeviceBaudrate()
 
             if (testAT())
             {
+#if DEBUG_MODE
                 Serial.print(F("[M] Current baudrate found at "));
                 Serial.print(BAUDRATES[baudrateIndex]);
                 Serial.println();
+#endif
 
                 serial->end();
 
@@ -210,7 +231,10 @@ const bool Node_HC12::changeChannel(const uint8_t ch)
     {
         if (channel == ch)
         {
+#if DEBUG_MODE
             Serial.println(F("[M] Channel not changed. Already the same"));
+#endif
+
             return true;
         }
 
@@ -238,10 +262,12 @@ const bool Node_HC12::changeChannel(const uint8_t ch)
         {
             channel = ch;
 
+#if DEBUG_MODE
             Serial.print(F("[M] Changing channel to "));
             Serial.print(ch);
             Serial.print(F(" was successful"));
             Serial.println();
+#endif
 
             setToATCommandMode();
 
@@ -269,9 +295,11 @@ const uint8_t Node_HC12::checkDeviceChannel() const
         {
             const uint8_t ch = response.substring(5).toInt();
 
+#if DEBUG_MODE
             Serial.print(F("[M] Channel detected at channel "));
             Serial.print(ch);
             Serial.println();
+#endif
 
             return ch;
         }
@@ -292,7 +320,10 @@ const bool Node_HC12::isBaudrateAllowed(const uint32_t br)
     {
         if (br == BAUDRATES[baudrateIndex])
         {
-            // Serial.println(F("[M] Baudrate is fine"));
+#if DEBUG_MODE
+            Serial.println(F("[M] Baudrate is allowed"));
+#endif
+
             return true;
         }
     }

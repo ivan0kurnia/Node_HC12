@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 
+#define DEBUG_MODE false
+
 class Node_HC12
 {
 public:
@@ -15,7 +17,7 @@ public:
     void setToATCommandMode();
     void setToTransmissionMode();
 
-    const String getResponse(const uint32_t timeout = responseTimeout /* Timeout's safe for 8 MHz CPU */) const;
+    const String getResponse(const uint32_t timeout = responseTimeout) const;
 
     const bool testAT() const;
     const uint32_t checkDeviceBaudrate();
