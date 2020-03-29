@@ -292,7 +292,7 @@ const bool Node_HC12::isBaudrateAllowed(const uint32_t br)
     {
         if (br == BAUDRATES[baudrateIndex])
         {
-            Serial.println(F("[M] Baudrate is fine"));
+            // Serial.println(F("[M] Baudrate is fine"));
             return true;
         }
     }
