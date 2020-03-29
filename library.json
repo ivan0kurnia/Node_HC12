@@ -1,0 +1,17 @@
+{
+    "name": "Node_HC12",
+    "keywords": "HC12, RF, Communication",
+    "description": "A library to maximize the use of HC12 module for my university final project.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ivan0kurnia/Node_HC12"
+    },
+    "version": "0.1.0",
+    "examples": "examples/*/*.ino",
+    "frameworks": "arduino",
+    "platforms": [
+        "atmelavr",
+        "espressif8266",
+        "espressif32"
+    ]
+}
