@@ -1,6 +1,5 @@
 {
     "name": "Node_HC12",
-    "keywords": "HC12, RF, Communication",
     "description": "A library to maximize the use of HC12 module for my university final project.",
     "repository": {
         "type": "git",
