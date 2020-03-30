@@ -12,6 +12,7 @@ public:
     Node_HC12(SoftwareSerial *const serial, const uint8_t setPin);
 
     const bool begin(const uint32_t br, const uint8_t ch);
+    void end();
 
     const bool getMode() const { return mode; }
     void setToATCommandMode();
@@ -30,14 +31,15 @@ public:
     const bool changeChannel(const uint8_t ch);
 
     static const bool isBaudrateAllowed(const uint32_t br);
+    static const bool isChannelAllowed(const uint8_t ch);
+
+    static const uint32_t getResponseTimeout() { return responseTimeout; }
+    static void setResponseTimeout(const uint32_t timeout);
 
     static const bool AT_COMMAND_MODE = LOW;
     static const bool TRANSMISSION_MODE = HIGH;
 
     static const uint32_t BAUDRATES[];
-
-    static const uint32_t getResponseTimeout() { return responseTimeout; }
-    static void setResponseTimeout(const uint32_t timeout);
 
     static uint32_t responseTimeout;
 

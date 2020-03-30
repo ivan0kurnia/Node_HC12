@@ -14,7 +14,7 @@ Node_HC12::Node_HC12(SoftwareSerial *const serial, const uint8_t setPin) : seria
 
 const bool Node_HC12::begin(const uint32_t br, const uint8_t ch)
 {
-    if (!isBaudrateAllowed(br))
+    if (!isBaudrateAllowed(br) && !isChannelAllowed(ch))
         return false;
 
     pinMode(SET_PIN, OUTPUT);
@@ -22,16 +22,25 @@ const bool Node_HC12::begin(const uint32_t br, const uint8_t ch)
 
     baudrate = checkDeviceBaudrate();
     if (!baudrate)
+    {
+        end();
         return false;
+    }
 
     serial->begin(baudrate);
 
     if (!changeBaudrate(br))
+    {
+        end();
         return false;
+    }
 
     channel = checkDeviceChannel();
     if (!changeChannel(ch))
+    {
+        end();
         return false;
+    }
 
     setToTransmissionMode();
 
@@ -40,6 +49,21 @@ const bool Node_HC12::begin(const uint32_t br, const uint8_t ch)
 #endif
 
     return true;
+}
+
+void Node_HC12::end()
+{
+    serial->end();
+
+    setToATCommandMode();
+    pinMode(SET_PIN, INPUT);
+
+    baudrate = 0U;
+    channel = 0U;
+
+#if DEBUG_MODE
+    Serial.println(F("[M] End sequence success"));
+#endif
 }
 
 void Node_HC12::setToATCommandMode()
@@ -57,7 +81,7 @@ void Node_HC12::setToATCommandMode()
 
         mode = AT_COMMAND_MODE;
         digitalWrite(SET_PIN, AT_COMMAND_MODE);
-        delay(40);
+        delay(40UL);
     }
 }
 
@@ -76,7 +100,7 @@ void Node_HC12::setToTransmissionMode()
 
         mode = TRANSMISSION_MODE;
         digitalWrite(SET_PIN, TRANSMISSION_MODE);
-        delay(80);
+        delay(80UL);
     }
 }
 
@@ -89,7 +113,7 @@ const String Node_HC12::getResponse(const uint32_t timeout) const
 {
     String response = "";
 
-    const unsigned long previousMillis = millis();
+    const uint32_t previousMillis = millis();
     while (millis() - previousMillis < timeout)
     {
         if (serial->available())
@@ -97,7 +121,7 @@ const String Node_HC12::getResponse(const uint32_t timeout) const
             do
             {
                 response += static_cast<char>(serial->read());
-                delay(1);
+                delay(1U);
             } while (serial->available());
             response.trim();
 
@@ -158,7 +182,7 @@ const bool Node_HC12::changeBaudrate(const uint32_t br)
 
         serial->print(F("AT+B"));
         serial->print(br);
-        delay(40);
+        delay(40UL);
 
         if (getResponse() == expectedResponse)
         {
@@ -195,7 +219,7 @@ const uint32_t Node_HC12::checkDeviceBaudrate()
     {
         serial->end();
 
-        for (size_t baudrateIndex = 0; baudrateIndex < sizeof(BAUDRATES) / sizeof(const uint32_t); ++baudrateIndex)
+        for (size_t baudrateIndex = 0U; baudrateIndex < sizeof(BAUDRATES) / sizeof(const uint32_t); ++baudrateIndex)
         {
             serial->begin(BAUDRATES[baudrateIndex]);
 
@@ -238,17 +262,14 @@ const bool Node_HC12::changeChannel(const uint8_t ch)
             return true;
         }
 
-        if (!ch || ch > 127)
-        {
-            Serial.println(F("[M][E] Channel out of bounds!"));
+        if (!isChannelAllowed(ch))
             return false;
-        }
 
         String chInString;
 
-        if (ch > 99) // Three digits
+        if (ch > 99U) // Three digits
             chInString = String(ch);
-        else if (ch > 9) // Two digits
+        else if (ch > 9U) // Two digits
             chInString = String(F("0")) + String(ch);
         else // One digits
             chInString = String(F("00")) + String(ch);
@@ -293,7 +314,7 @@ const uint8_t Node_HC12::checkDeviceChannel() const
         const String response = getResponse();
         if (response.startsWith(F("OK+RC")))
         {
-            const uint8_t ch = response.substring(5).toInt();
+            const uint8_t ch = response.substring(5U).toInt();
 
 #if DEBUG_MODE
             Serial.print(F("[M] Channel detected at channel "));
@@ -316,7 +337,7 @@ const uint8_t Node_HC12::checkDeviceChannel() const
 
 const bool Node_HC12::isBaudrateAllowed(const uint32_t br)
 {
-    for (size_t baudrateIndex = 0; baudrateIndex < sizeof(BAUDRATES) / sizeof(const uint32_t); ++baudrateIndex)
+    for (size_t baudrateIndex = 0U; baudrateIndex < sizeof(BAUDRATES) / sizeof(const uint32_t); ++baudrateIndex)
     {
         if (br == BAUDRATES[baudrateIndex])
         {
@@ -330,4 +351,21 @@ const bool Node_HC12::isBaudrateAllowed(const uint32_t br)
 
     Serial.println(F("[M][E] Baudrate cannot be used"));
     return false;
+}
+
+const bool Node_HC12::isChannelAllowed(const uint8_t ch)
+{
+    if (ch >= 1U && ch <= 127U)
+    {
+#if DEBUG_MODE
+        Serial.println(F("[M] Channel is allowed"));
+#endif
+
+        return true;
+    }
+    else
+    {
+        Serial.println(F("[M][E] Channel out of bounds"));
+        return false;
+    }
 }
