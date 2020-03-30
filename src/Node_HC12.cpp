@@ -14,7 +14,7 @@ Node_HC12::Node_HC12(SoftwareSerial *const serial, const uint8_t setPin) : seria
 
 const bool Node_HC12::begin(const uint32_t br, const uint8_t ch)
 {
-    if (!isBaudrateAllowed(br) && !isChannelAllowed(ch))
+    if (!isBaudrateAllowed(br) || !isChannelAllowed(ch))
         return false;
 
     pinMode(SET_PIN, OUTPUT);
@@ -102,11 +102,6 @@ void Node_HC12::setToTransmissionMode()
         digitalWrite(SET_PIN, TRANSMISSION_MODE);
         delay(80UL);
     }
-}
-
-void Node_HC12::setResponseTimeout(const uint32_t timeout)
-{
-    responseTimeout = timeout;
 }
 
 const String Node_HC12::getResponse(const uint32_t timeout) const

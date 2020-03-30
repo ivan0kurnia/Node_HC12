@@ -34,14 +34,12 @@ public:
     static const bool isChannelAllowed(const uint8_t ch);
 
     static const uint32_t getResponseTimeout() { return responseTimeout; }
-    static void setResponseTimeout(const uint32_t timeout);
+    static void setResponseTimeout(const uint32_t timeout) { responseTimeout = timeout; }
 
     static const bool AT_COMMAND_MODE = LOW;
     static const bool TRANSMISSION_MODE = HIGH;
 
     static const uint32_t BAUDRATES[];
-
-    static uint32_t responseTimeout;
 
 private:
     SoftwareSerial *const serial;
@@ -51,6 +49,8 @@ private:
 
     uint32_t baudrate{};
     uint8_t channel{};
+
+    static uint32_t responseTimeout;
 };
 
 #endif
