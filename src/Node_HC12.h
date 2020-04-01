@@ -18,6 +18,9 @@ public:
     void setToATCommandMode();
     void setToTransmissionMode();
 
+    void clearSerialBuffer();
+
+    // For AT command use only
     const String getResponse(const uint32_t timeout = responseTimeout) const;
 
     const bool testAT() const;
@@ -29,6 +32,9 @@ public:
 
     const uint8_t getChannel() const { return channel; }
     const bool changeChannel(const uint8_t ch);
+
+    const bool sleep();
+    void wake() { setToTransmissionMode(); }
 
     static const bool isBaudrateAllowed(const uint32_t br);
     static const bool isChannelAllowed(const uint8_t ch);

@@ -68,7 +68,7 @@ void Node_HC12::end()
 
 void Node_HC12::setToATCommandMode()
 {
-    if (mode == AT_COMMAND_MODE)
+    if (getMode() == AT_COMMAND_MODE)
     {
         setToTransmissionMode();
         setToATCommandMode();
@@ -87,7 +87,7 @@ void Node_HC12::setToATCommandMode()
 
 void Node_HC12::setToTransmissionMode()
 {
-    if (mode == TRANSMISSION_MODE)
+    if (getMode() == TRANSMISSION_MODE)
     {
         setToATCommandMode();
         setToTransmissionMode();
@@ -101,6 +101,15 @@ void Node_HC12::setToTransmissionMode()
         mode = TRANSMISSION_MODE;
         digitalWrite(SET_PIN, TRANSMISSION_MODE);
         delay(80UL);
+    }
+}
+
+void Node_HC12::clearSerialBuffer()
+{
+    while (serial->available())
+    {
+        serial->read();
+        delay(1U);
     }
 }
 
@@ -135,7 +144,7 @@ const String Node_HC12::getResponse(const uint32_t timeout) const
 
 const bool Node_HC12::testAT() const
 {
-    if (mode == AT_COMMAND_MODE)
+    if (getMode() == AT_COMMAND_MODE)
     {
         serial->print(F("AT"));
 
@@ -159,9 +168,9 @@ const bool Node_HC12::testAT() const
 
 const bool Node_HC12::changeBaudrate(const uint32_t br)
 {
-    if (mode == AT_COMMAND_MODE)
+    if (getMode() == AT_COMMAND_MODE)
     {
-        if (baudrate == br)
+        if (getBaudrate() == br)
         {
 #if DEBUG_MODE
             Serial.println(F("[M] Baudrate not changed. Already the same"));
@@ -210,7 +219,7 @@ const bool Node_HC12::changeBaudrate(const uint32_t br)
 
 const uint32_t Node_HC12::checkDeviceBaudrate()
 {
-    if (mode == AT_COMMAND_MODE)
+    if (getMode() == AT_COMMAND_MODE)
     {
         serial->end();
 
@@ -246,9 +255,9 @@ const uint32_t Node_HC12::checkDeviceBaudrate()
 
 const bool Node_HC12::changeChannel(const uint8_t ch)
 {
-    if (mode == AT_COMMAND_MODE)
+    if (getMode() == AT_COMMAND_MODE)
     {
-        if (channel == ch)
+        if (getChannel() == ch)
         {
 #if DEBUG_MODE
             Serial.println(F("[M] Channel not changed. Already the same"));
@@ -302,7 +311,7 @@ const bool Node_HC12::changeChannel(const uint8_t ch)
 
 const uint8_t Node_HC12::checkDeviceChannel() const
 {
-    if (mode == AT_COMMAND_MODE)
+    if (getMode() == AT_COMMAND_MODE)
     {
         serial->print(F("AT+RC"));
 
@@ -326,6 +335,35 @@ const uint8_t Node_HC12::checkDeviceChannel() const
     else
     {
         Serial.println(F("[M][E] Set device mode to AT command mode first!"));
+        return false;
+    }
+}
+
+const bool Node_HC12::sleep()
+{
+    if (getMode() != AT_COMMAND_MODE)
+    {
+        setToATCommandMode();
+    }
+
+    serial->print(F("AT+SLEEP"));
+    delay(40);
+
+    if (getResponse() == F("OK+SLEEP"))
+    {
+        setToTransmissionMode();
+
+#if DEBUG_MODE
+        Serial.println(F("[M] Device is now asleep"));
+#endif
+
+        return true;
+    }
+    else
+    {
+        setToTransmissionMode();
+
+        Serial.println(F("[M][E] Failed to sleep device"));
         return false;
     }
 }
