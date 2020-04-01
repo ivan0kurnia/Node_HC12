@@ -348,7 +348,7 @@ const String Node_HC12::checkFirmwareVersion() const
         clearSerialBuffer();
         serial->print("AT+V");
 
-        return getResponse();
+        return "[R] " + getResponse();
     }
     else
     {
