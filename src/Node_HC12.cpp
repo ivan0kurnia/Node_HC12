@@ -44,10 +44,7 @@ const bool Node_HC12::begin(const uint32_t br, const uint8_t ch)
 
     setToTransmissionMode();
 
-#if DEBUG_MODE
-    Serial.println(F("[M] Begin sequence success"));
-#endif
-
+    Serial.println(F("[M] Begin sequence successful"));
     return true;
 }
 
@@ -64,9 +61,7 @@ void Node_HC12::end()
     baudrate = 0U;
     channel = 0U;
 
-#if DEBUG_MODE
-    Serial.println(F("[M] End sequence success"));
-#endif
+    Serial.println(F("[M] End sequence successful"));
 }
 
 void Node_HC12::setToATCommandMode()
