@@ -104,7 +104,7 @@ void Node_HC12::setToTransmissionMode()
     }
 }
 
-void Node_HC12::clearSerialBuffer()
+void Node_HC12::clearSerialBuffer() const
 {
     while (serial->available())
     {
@@ -146,6 +146,7 @@ const bool Node_HC12::testAT() const
 {
     if (getMode() == AT_COMMAND_MODE)
     {
+        clearSerialBuffer();
         serial->print(F("AT"));
 
         if (getResponse() == F("OK"))
@@ -184,6 +185,7 @@ const bool Node_HC12::changeBaudrate(const uint32_t br)
 
         const String expectedResponse = String(F("OK+B")) + String(br);
 
+        clearSerialBuffer();
         serial->print(F("AT+B"));
         serial->print(br);
         delay(40UL);
@@ -280,6 +282,7 @@ const bool Node_HC12::changeChannel(const uint8_t ch)
 
         const String expectedResponse = String(F("OK+C")) + chInString;
 
+        clearSerialBuffer();
         serial->print(F("AT+C"));
         serial->print(chInString);
 
@@ -313,6 +316,7 @@ const uint8_t Node_HC12::checkDeviceChannel() const
 {
     if (getMode() == AT_COMMAND_MODE)
     {
+        clearSerialBuffer();
         serial->print(F("AT+RC"));
 
         const String response = getResponse();
@@ -346,6 +350,7 @@ const bool Node_HC12::sleep()
         setToATCommandMode();
     }
 
+    clearSerialBuffer();
     serial->print(F("AT+SLEEP"));
     delay(40);
 

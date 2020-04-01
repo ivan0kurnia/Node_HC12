@@ -18,7 +18,7 @@ public:
     void setToATCommandMode();
     void setToTransmissionMode();
 
-    void clearSerialBuffer();
+    void clearSerialBuffer() const;
 
     // For AT command use only
     const String getResponse(const uint32_t timeout = responseTimeout) const;
