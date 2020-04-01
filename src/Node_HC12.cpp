@@ -55,6 +55,9 @@ void Node_HC12::end()
 {
     serial->end();
 
+    if (isAsleep())
+        wake();
+
     setToATCommandMode();
     pinMode(SET_PIN, INPUT);
 
@@ -219,7 +222,7 @@ const bool Node_HC12::changeBaudrate(const uint32_t br)
     }
 }
 
-const uint32_t Node_HC12::checkDeviceBaudrate()
+const uint32_t Node_HC12::checkDeviceBaudrate() const
 {
     if (getMode() == AT_COMMAND_MODE)
     {
@@ -343,6 +346,22 @@ const uint8_t Node_HC12::checkDeviceChannel() const
     }
 }
 
+const String Node_HC12::checkFirmwareVersion() const
+{
+    if (getMode() == AT_COMMAND_MODE)
+    {
+        clearSerialBuffer();
+        serial->print("AT+V");
+
+        return getResponse();
+    }
+    else
+    {
+        Serial.println(F("[M][E] Set device mode to AT command mode first!"));
+        return "";
+    }
+}
+
 const bool Node_HC12::sleep()
 {
     if (getMode() != AT_COMMAND_MODE)
@@ -356,6 +375,7 @@ const bool Node_HC12::sleep()
 
     if (getResponse() == F("OK+SLEEP"))
     {
+        sleeping = true;
         setToTransmissionMode();
 
 #if DEBUG_MODE
@@ -371,6 +391,12 @@ const bool Node_HC12::sleep()
         Serial.println(F("[M][E] Failed to sleep device"));
         return false;
     }
+}
+
+void Node_HC12::wake()
+{
+    sleeping = false;
+    setToTransmissionMode();
 }
 
 const bool Node_HC12::isBaudrateAllowed(const uint32_t br)

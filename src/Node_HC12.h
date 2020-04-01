@@ -24,8 +24,9 @@ public:
     const String getResponse(const uint32_t timeout = responseTimeout) const;
 
     const bool testAT() const;
-    const uint32_t checkDeviceBaudrate();
+    const uint32_t checkDeviceBaudrate() const;
     const uint8_t checkDeviceChannel() const;
+    const String checkFirmwareVersion() const;
 
     const uint32_t getBaudrate() const { return baudrate; }
     const bool changeBaudrate(const uint32_t br);
@@ -34,7 +35,9 @@ public:
     const bool changeChannel(const uint8_t ch);
 
     const bool sleep();
-    void wake() { setToTransmissionMode(); }
+    void wake();
+
+    const bool isAsleep() const { return sleeping; }
 
     static const bool isBaudrateAllowed(const uint32_t br);
     static const bool isChannelAllowed(const uint8_t ch);
@@ -52,6 +55,7 @@ private:
     const uint8_t SET_PIN;
 
     bool mode = AT_COMMAND_MODE;
+    bool sleeping = false;
 
     uint32_t baudrate{};
     uint8_t channel{};
