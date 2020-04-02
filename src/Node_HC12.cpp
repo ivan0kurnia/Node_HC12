@@ -3,10 +3,17 @@
 
 #include "Node_HC12.h"
 
+// #define SLOW_CPU defined(ARDUINO_ARCH_AVR)
+#define FAST_CPU defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
+
 // Notice: this library might fail to detect responses in high baudrates due to the nature of SoftwareSerial
 const uint32_t Node_HC12::BAUDRATES[]{1200UL, 2400UL, 4800UL, 9600UL, 19200UL, 38400UL, 57600UL, 115200UL};
 
+#if FAST_CPU
+uint32_t Node_HC12::responseTimeout = 80UL;
+#else
 uint32_t Node_HC12::responseTimeout = 40UL;
+#endif
 
 Node_HC12::Node_HC12(SoftwareSerial *const serial, const uint8_t setPin) : serial{serial}, SET_PIN{setPin}
 {
@@ -107,7 +114,15 @@ void Node_HC12::clearSerialBuffer() const
     while (serial->available())
     {
         serial->read();
+
+#if FAST_CPU
+        const uint32_t previousMicros = micros();
+        while (micros() - previousMicros < 5120UL)
+            if (serial->available())
+                break;
+#else
         delay(1U);
+#endif
     }
 }
 
@@ -123,7 +138,15 @@ const String Node_HC12::getResponse(const uint32_t timeout) const
             do
             {
                 response += static_cast<char>(serial->read());
+
+#if FAST_CPU
+                const uint32_t previousMicros = micros();
+                while (micros() - previousMicros < 5120UL)
+                    if (serial->available())
+                        break;
+#else
                 delay(1U);
+#endif
             } while (serial->available());
             response.trim();
 
@@ -226,6 +249,12 @@ const uint32_t Node_HC12::checkDeviceBaudrate() const
         for (size_t baudrateIndex = 0U; baudrateIndex < sizeof(BAUDRATES) / sizeof(const uint32_t); ++baudrateIndex)
         {
             serial->begin(BAUDRATES[baudrateIndex]);
+
+#if DEBUG_MODE
+            Serial.print(F("[M] Testing response at baudrate "));
+            Serial.print(BAUDRATES[baudrateIndex]);
+            Serial.println();
+#endif
 
             if (testAT())
             {
@@ -366,17 +395,13 @@ const bool Node_HC12::sleep()
 
     clearSerialBuffer();
     serial->print(F("AT+SLEEP"));
-    delay(40);
 
     if (getResponse() == F("OK+SLEEP"))
     {
         sleeping = true;
         setToTransmissionMode();
 
-#if DEBUG_MODE
         Serial.println(F("[M] Device is now asleep"));
-#endif
-
         return true;
     }
     else
@@ -392,6 +417,8 @@ void Node_HC12::wake()
 {
     sleeping = false;
     setToTransmissionMode();
+
+    Serial.println(F("[M] Device is now awake"));
 }
 
 const bool Node_HC12::isBaudrateAllowed(const uint32_t br)

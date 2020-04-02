@@ -5,7 +5,7 @@
         "type": "git",
         "url": "https://github.com/ivan0kurnia/Node_HC12"
     },
-    "version": "0.1.0",
+    "version": "0.4.2",
     "examples": "examples/*/*.ino",
     "frameworks": "arduino",
     "platforms": [
