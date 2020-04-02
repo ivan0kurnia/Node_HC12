@@ -375,9 +375,9 @@ const String Node_HC12::checkFirmwareVersion() const
     if (getMode() == AT_COMMAND_MODE)
     {
         clearSerialBuffer();
-        serial->print("AT+V");
+        serial->print(F("AT+V"));
 
-        return "[R] " + getResponse();
+        return getResponse();
     }
     else
     {
