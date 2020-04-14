@@ -35,7 +35,7 @@ const bool Node_HC12::begin(const uint32_t br, const uint8_t ch)
     }
 
     serial->begin(baudrate);
-    delay(10U);
+    delay(15U);
 
     if (!changeBaudrate(br))
     {
@@ -218,7 +218,7 @@ const bool Node_HC12::changeBaudrate(const uint32_t br)
 
             serial->end();
             serial->begin(br);
-            delay(10U);
+            delay(15U);
 
 #if DEBUG_MODE
             Serial.print(F("[M] Changing baudrate to "));
@@ -251,7 +251,7 @@ const uint32_t Node_HC12::checkDeviceBaudrate() const
         for (size_t baudrateIndex = 0U; baudrateIndex < sizeof(BAUDRATES) / sizeof(const uint32_t); ++baudrateIndex)
         {
             serial->begin(BAUDRATES[baudrateIndex]);
-            delay(10U);
+            delay(15U);
 
 #if DEBUG_MODE
             Serial.print(F("[M] Testing response at baudrate "));
