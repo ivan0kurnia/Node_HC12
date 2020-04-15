@@ -18,6 +18,7 @@ public:
     void setToATCommandMode();
     void setToTransmissionMode();
 
+    // For AT command use only
     void clearSerialBuffer() const;
 
     // For AT command use only

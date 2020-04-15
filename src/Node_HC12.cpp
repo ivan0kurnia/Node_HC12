@@ -86,7 +86,7 @@ void Node_HC12::setToATCommandMode()
 
         mode = AT_COMMAND_MODE;
         digitalWrite(SET_PIN, AT_COMMAND_MODE);
-        delay(40UL);
+        delay(40U);
     }
 }
 
@@ -105,25 +105,39 @@ void Node_HC12::setToTransmissionMode()
 
         mode = TRANSMISSION_MODE;
         digitalWrite(SET_PIN, TRANSMISSION_MODE);
-        delay(80UL);
+        delay(80U);
     }
 }
 
 void Node_HC12::clearSerialBuffer() const
 {
+#if FAST_CPU
+    if (serial->available())
+    {
+        unsigned long previousMicros = micros();
+        while (true)
+        {
+            if (micros() - previousMicros < 5120UL)
+            {
+                if (serial->available())
+                {
+                    serial->read();
+                    previousMicros = micros();
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+#else
     while (serial->available())
     {
         serial->read();
-
-#if FAST_CPU
-        const uint32_t previousMicros = micros();
-        while (micros() - previousMicros < 5120UL)
-            if (serial->available())
-                break;
-#else
         delay(1U);
-#endif
     }
+#endif
 }
 
 const String Node_HC12::getResponse(const uint32_t timeout) const
@@ -135,26 +149,38 @@ const String Node_HC12::getResponse(const uint32_t timeout) const
     {
         if (serial->available())
         {
+#if FAST_CPU
+            unsigned long previousMicros = micros();
+            while (true)
+            {
+                if (micros() - previousMicros < 5120UL)
+                {
+                    if (serial->available())
+                    {
+                        response += static_cast<char>(serial->read());
+                        previousMicros = micros();
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+#else
             do
             {
                 response += static_cast<char>(serial->read());
-
-#if FAST_CPU
-                const uint32_t previousMicros = micros();
-                while (micros() - previousMicros < 5120UL)
-                    if (serial->available())
-                        break;
-#else
                 delay(1U);
-#endif
             } while (serial->available());
-            response.trim();
+#endif
 
 #if DEBUG_MODE
             Serial.print(F("[R] "));
             Serial.print(response);
             Serial.println();
 #endif
+
+            response.trim();
 
             break;
         }
@@ -209,7 +235,7 @@ const bool Node_HC12::changeBaudrate(const uint32_t br)
         clearSerialBuffer();
         serial->print(F("AT+B"));
         serial->print(br);
-        delay(40UL);
+        delay(40U);
 
         if (getResponse() == expectedResponse)
         {
