@@ -245,11 +245,11 @@ const uint32_t Node_HC12::checkDeviceBaudrate() const
     if (getMode() == AT_COMMAND_MODE)
     {
         serial->end();
+        delay(40U);
 
         for (size_t baudrateIndex = 0U; baudrateIndex < sizeof(BAUDRATES) / sizeof(const uint32_t); ++baudrateIndex)
         {
             serial->begin(BAUDRATES[baudrateIndex]);
-            delay(40U);
 
 #if DEBUG_MODE
             Serial.print(F("[M] Testing response at baudrate "));
@@ -271,6 +271,7 @@ const uint32_t Node_HC12::checkDeviceBaudrate() const
             }
 
             serial->end();
+            delay(40U);
         }
 
         Serial.println(F("[M][E] Baudrate not found. Could not get a response"));
